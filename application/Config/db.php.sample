@@ -1,0 +1,12 @@
+<?php
+
+/**
+ * Configuration for: Database
+ * This is the place where you define your database credentials, database type etc.
+ */
+define('DB_TYPE', 'mysql');
+define('DB_HOST', '<host>');
+define('DB_NAME', 'xxx');
+define('DB_USER', 'xxx');
+define('DB_PASS', 'xxx');
+define('DB_CHARSET', 'utf8');
