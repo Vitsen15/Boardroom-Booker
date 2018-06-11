@@ -8,10 +8,21 @@ abstract class Controller
 
     /**
      * Default controller route.
-     *
-     * @return string
      */
     abstract public function index();
+
+
+
+    protected function checkAuth()
+    {
+        if (
+            !isset($_SESSION['accessToken']) ||
+            !isset($_COOKIE['accessToken']) ||
+            $_SESSION['accessToken'] != $_COOKIE['accessToken']
+        ) {
+            header('Location: ' . URL . '/login');
+        } else return;
+    }
 
     /**
      * Renders provided view inside layout.
