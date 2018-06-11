@@ -1,0 +1,10 @@
+<?php
+
+/**
+ * Configuration for: Authorization
+ */
+define('SALT', 'xxx');
+define('USERNAME_MIN_LENGTH', xx);
+define('USERNAME_MAX_LENGTH', xx);
+define('PASSWORD_MIN_LENGTH', xx);
+define('PASSWORD_MAX_LENGTH', xx);
