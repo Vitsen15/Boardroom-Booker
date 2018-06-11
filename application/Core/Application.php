@@ -10,7 +10,7 @@ class Application
 {
     use Singleton;
 
-    const CONTROLLERS_DIR = APP . DIRECTORY_SEPARATOR . 'Controller';
+    const CONTROLLERS_DIR = APP . 'Controller' . DIRECTORY_SEPARATOR;
 
     /** @var string The controller name */
     private $controllerName;
@@ -35,8 +35,8 @@ class Application
         if (!$this->controllerName) {
             $page = new HomeController();
             $page->index();
-        } elseif (file_exists(APP . 'Controller/' . ucfirst($this->controllerName) . 'Controller.php')) {
-            $controller = self::CONTROLLERS_DIR . ucfirst($this->controllerName) . 'Controller';
+        } elseif (file_exists(self::CONTROLLERS_DIR . ucfirst($this->controllerName) . 'Controller.php')) {
+            $controller = "\\Controller\\" . ucfirst($this->controllerName) . 'Controller';
             $this->controller = new $controller();
 
             if (method_exists($this->controller, $this->actionName) &&
