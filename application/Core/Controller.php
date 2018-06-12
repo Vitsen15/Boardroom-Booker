@@ -11,8 +11,6 @@ abstract class Controller
      */
     abstract public function index();
 
-
-
     protected function checkAuth()
     {
         session_start();
@@ -35,7 +33,9 @@ abstract class Controller
      */
     protected function view($template, $data = null)
     {
-        extract($data);
+        if (isset($data)) {
+            extract($data);
+        }
 
         return include LAYOUT_PATH;
     }
