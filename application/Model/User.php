@@ -20,7 +20,7 @@ class User extends Model
         $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/createUser.sql');
         $query = $this->db->prepare($sql);
 
-        $this->accessToken = $token = bin2hex(openssl_random_pseudo_bytes(16));;
+        $this->accessToken = $this->generateAccessToken();
         $passwordHash = $this->generatePasswordHash($request['password']);
 
         $query->bindParam(':username', $request['username'], PDO::PARAM_STR);
@@ -53,7 +53,8 @@ class User extends Model
         $user = $query->fetch();
 
         if ($user) {
-            $this->accessToken = $user->access_token;
+            $this->accessToken = $this->generateAccessToken();
+            $this->updateUserAccessToken($user->username, $this->accessToken);
             $this->startUserSession();
             return true;
         } else return false;
@@ -76,5 +77,32 @@ class User extends Model
     private function generatePasswordHash($password)
     {
         return crypt($password, SALT);
+    }
+
+    /**
+     * Generates access token.
+     *
+     * @return string - Access token.
+     */
+    private function generateAccessToken()
+    {
+        return bin2hex(openssl_random_pseudo_bytes(16));
+    }
+
+    /**
+     * Finds user by username and updates access token
+     *
+     * @param string $username
+     * @param string $accessToken
+     */
+    private function updateUserAccessToken($username, $accessToken)
+    {
+        $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/updateUserAccessToken.sql');
+
+        $query = $this->db->prepare($sql);
+
+        $query->bindParam(':access_token', $accessToken, PDO::PARAM_STR);
+        $query->bindParam(':username', $username, PDO::PARAM_STR);
+        $query->execute();
     }
 }
