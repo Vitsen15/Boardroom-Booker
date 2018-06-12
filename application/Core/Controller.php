@@ -15,6 +15,8 @@ abstract class Controller
 
     protected function checkAuth()
     {
+        session_start();
+
         if (
             !isset($_SESSION['accessToken']) ||
             !isset($_COOKIE['accessToken']) ||
