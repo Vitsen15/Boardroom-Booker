@@ -10,4 +10,5 @@ define('LAYOUT_PATH', VIEWS_PATH . 'layouts/app.php');
 
 require_once 'db.php';
 require_once 'auth.php';
+require_once 'calendar.php';
 
