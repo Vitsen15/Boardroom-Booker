@@ -23,7 +23,7 @@ class LoginController extends Controller
                 if (!$this->model->login($_POST)) {
                     $this->view($view, ['errorMessage' => 'Username or password is incorrect']);
                 } else {
-                    $this->view(VIEWS_PATH . 'index.php');
+                    header('Location: ' . URL . '/');
                 }
 
             }
