@@ -17,7 +17,7 @@ class User extends Model
      */
     public function register($request)
     {
-        $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/createUser.sql');
+        $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/user/createUser.sql');
         $query = $this->db->prepare($sql);
 
         $this->accessToken = $this->generateAccessToken();
@@ -42,7 +42,7 @@ class User extends Model
      */
     public function login($request)
     {
-        $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/getUser.sql');
+        $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/user/getUser.sql');
         $query = $this->db->prepare($sql);
 
         $passwordHash = $this->generatePasswordHash($request['password']);
@@ -97,7 +97,7 @@ class User extends Model
      */
     private function updateUserAccessToken($username, $accessToken)
     {
-        $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/updateUserAccessToken.sql');
+        $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/user/updateUserAccessToken.sql');
 
         $query = $this->db->prepare($sql);
 
