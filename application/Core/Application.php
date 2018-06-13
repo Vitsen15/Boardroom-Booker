@@ -3,7 +3,7 @@
 namespace Core;
 
 use Controller\ErrorController;
-use Controller\HomeController;
+use Controller\CalendarController;
 use Core\Traits\Singleton;
 
 class Application
@@ -33,7 +33,7 @@ class Application
         $this->splitUrl();
 
         if (!$this->controllerName) {
-            $page = new HomeController();
+            $page = new CalendarController();
             $page->index();
         } elseif (file_exists(self::CONTROLLERS_DIR . ucfirst($this->controllerName) . 'Controller.php')) {
             $controller = "\\Controller\\" . ucfirst($this->controllerName) . 'Controller';

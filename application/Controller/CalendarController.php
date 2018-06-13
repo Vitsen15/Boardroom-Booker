@@ -8,7 +8,7 @@ use Model\Appointment;
 use Model\Boardroom;
 use PDOException;
 
-class HomeController extends Controller
+class CalendarController extends Controller
 {
     /**
      * @return string

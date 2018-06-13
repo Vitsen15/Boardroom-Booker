@@ -3,7 +3,7 @@
         <? if (isset($boardrooms)): ?>
             <? foreach ($boardrooms as $boardroom): ?>
                 <li>
-                    <a href="<?= URL ?>/home/changeBoardroom/<?= $boardroom->id . '/' . $year . '/' . $month ?>">
+                    <a href="<?= URL ?>/calendar/changeBoardroom/<?= $boardroom->id . '/' . $year . '/' . $month ?>">
                         <?= $boardroom->name ?>
                     </a>
                 </li>
@@ -15,12 +15,12 @@
     <h1>Boardroom Booker</h1>
     <h2><?= isset($boardroomName) ? $boardroomName : 'Boardroom is not defined!' ?></h2>
     <h3 class="calendar-pagination">
-        <a href="<?= URL ?>/home/changeCalendarMonth/<?= $year . '/' . $month . '/' . $boardroom->id . '/back' ?>"><</a>
+        <a href="<?= URL ?>/calendar/changeCalendarMonth/<?= $year . '/' . $month . '/' . $boardroom->id . '/back' ?>"><</a>
 
         <?= isset($month) ? $month : 'Month is not defined'; ?>
         <?= isset($year) ? $year : 'Year is not defined'; ?>
 
-        <a href="<?= URL ?>/home/changeCalendarMonth/<?= $year . '/' . $month . '/' . $boardroom->id . '/forward' ?>">></a>
+        <a href="<?= URL ?>/calendar/changeCalendarMonth/<?= $year . '/' . $month . '/' . $boardroom->id . '/forward' ?>">></a>
     </h3>
 
     <table class="calendar">
