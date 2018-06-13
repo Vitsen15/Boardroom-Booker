@@ -189,26 +189,31 @@ class HomeController extends Controller
         $weeks = [];
 
         // Add empty cells at beginning of the month
-        $week = '';
-        $week .= str_repeat("<td></td>", $offset);
+        $week = [];
+
+        if ($offset > 0) {
+            for ($i = 0; $i < $offset; $i++) $week[$i] = null;
+        }
 
         for ($day = 1; $day <= $monthDayCount; $day++, $weekDayIndex++) {
 
-            $week .= "<td>$day</td>";
+            $week[]['monthDay'] = $day;
+
             if ($weekDayIndex % 7 === 0 || $day === $monthDayCount) {
 
                 if ($day === $monthDayCount) {
 
                     // Add empty cells at ending of the month
-                    if ($weekDayIndex !== 7){
-                        $week .= str_repeat("<td></td>", 7 - ($weekDayIndex % 7));
+                    $offset = 7 - ($weekDayIndex % 7);
+                    if ($weekDayIndex !== 7) {
+                        for ($i = 0; $i < $offset; $i++) array_push($week, null);
                     }
                 }
 
                 $weeks[] = $week;
 
                 $weekDayIndex = 0;
-                $week = '';
+                $week = [];
             }
         }
 

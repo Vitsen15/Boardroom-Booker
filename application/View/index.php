@@ -38,6 +38,11 @@
         <? if (isset($weeks)): ?>
             <? foreach ($weeks as $week): ?>
                 <tr class="week">
+                    <? foreach ($week as $day): ?>
+                        <td>
+                            <?= $day['monthDay'] ?>
+                        </td>
+                    <? endforeach; ?>
                     <?= html_entity_decode($week); ?>
                 </tr>
             <? endforeach; ?>
