@@ -4,6 +4,7 @@ namespace Controller;
 
 use Core\Controller;
 use DateTime;
+use Model\Appointment;
 use Model\Boardroom;
 use PDOException;
 
@@ -177,7 +178,7 @@ class HomeController extends Controller
         }
     }
 
-    private function renderWeeksOfCurrentMonth($month, $year)
+    private function renderWeeksOfCurrentMonth($year, $month)
     {
         $date = new DateTime($year . '-' . $month);
         $monthDayCount = (int)$date->format('t');
@@ -187,17 +188,21 @@ class HomeController extends Controller
         $weekDayIndex = $this->calculateDayIndex($dayOfWeek);
 
         $weeks = [];
-
-        // Add empty cells at beginning of the month
         $week = [];
 
         if ($offset > 0) {
+            // Add empty cells at beginning of the month
             for ($i = 0; $i < $offset; $i++) $week[$i] = null;
         }
 
-        for ($day = 1; $day <= $monthDayCount; $day++, $weekDayIndex++) {
 
-            $week[]['monthDay'] = $day;
+        $this->model = new Appointment();
+        for ($day = 1, $arrayIndex = $offset; $day <= $monthDayCount; $day++, $weekDayIndex++, $arrayIndex++) {
+
+            $week[$arrayIndex]['monthDay'] = $day;
+
+            $currentDayDate = DateTime::createFromFormat('Y-F-d', "{$year}-{$month}-{$day}");
+            $week[$arrayIndex]['appointments'] = $this->model->getAppointmentsByDay($currentDayDate);
 
             if ($weekDayIndex % 7 === 0 || $day === $monthDayCount) {
 
@@ -220,8 +225,15 @@ class HomeController extends Controller
         return $weeks;
     }
 
+    /**
+     * Calculates day index depending on FIRST_DAY_OF_WEEK constant defined in config
+     *
+     * @param $indexOfWeekDay
+     * @return int
+     */
     private function calculateDayIndex($indexOfWeekDay)
     {
+        if (FIRST_DAY_OF_WEEK === 'monday' && $indexOfWeekDay === 0) return 7;
         if (FIRST_DAY_OF_WEEK === 'monday') return $indexOfWeekDay;
         if ($indexOfWeekDay === 7) return 1;
         return $indexOfWeekDay + 1;
