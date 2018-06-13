@@ -90,6 +90,12 @@ class CalendarController extends Controller
     {
         $data['boardrooms'] = $this->getCroppedBoardroomsList();
 
+        $currentBoardroomID = isset($parameters['boardroomID']) ?
+            (new Boardroom())->getBoardroomByID($parameters['boardroomID'])->id :
+            $data['boardrooms'][0]->id;
+
+        $data['currentBoardroomID'] = $currentBoardroomID;
+
         $data['boardroomName'] = isset($parameters['boardroomID']) ?
             (new Boardroom())->getBoardroomByID($parameters['boardroomID'])->name :
             $data['boardrooms'][0]->name;
@@ -104,10 +110,9 @@ class CalendarController extends Controller
 
         $data['weekDayNames'] = $this->getWeekDaysNames();
 
-        $currentBoardroomID = isset($parameters['boardroomID']) ?
-            (new Boardroom())->getBoardroomByID($parameters['boardroomID'])->id :
-            $data['boardrooms'][0]->id;
         $data['weeks'] = $this->generateWeeksArrayWithAppointmentsData($data['year'], $data['month'], $currentBoardroomID);
+
+//        var_dump($currentBoardroomID);die;
 
         return $data;
     }
