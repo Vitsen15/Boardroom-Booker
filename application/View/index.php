@@ -40,10 +40,31 @@
                 <tr class="week">
                     <? foreach ($week as $day): ?>
                         <td>
-                            <?= $day['monthDay'] ?>
+                            <span>
+                                <?= $day['monthDay'] ?>
+                            </span>
+                            <? if (isset($day['appointments'])): ?>
+                                <ul class="appointments">
+                                    <? foreach ($day['appointments'] as $appointment): ?>
+                                        <li>
+                                            <a href="">
+                                                <?php if (HOURS_FORMAT === 12): ?>
+                                                    <?= (new DateTime($appointment->start_time))->format('h:i A') ?>
+                                                    -
+                                                    <?= (new DateTime($appointment->end_time))->format('h:i A') ?>
+                                                <? elseif (HOURS_FORMAT === 24): ?>
+                                                    <?= (new DateTime($appointment->start_time))->format('h:i') ?>
+                                                    -
+                                                    <?= (new DateTime($appointment->end_time))->format('h:i') ?>
+                                                <? endif; ?>
+
+                                            </a>
+                                        </li>
+                                    <? endforeach; ?>
+                                </ul>
+                            <? endif; ?>
                         </td>
                     <? endforeach; ?>
-                    <?= html_entity_decode($week); ?>
                 </tr>
             <? endforeach; ?>
         <? else: ?>
