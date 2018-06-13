@@ -27,11 +27,12 @@ class HomeController extends Controller
      *
      * @param $year
      * @param $month
+     * @param $boardroomID
      * @param $direction
      *
      * @return string
      */
-    public function changeCalendarMonth($year, $month, $direction)
+    public function changeCalendarMonth($year, $month, $boardroomID, $direction)
     {
         parent::checkAuth();
         $this->validateCalendarMonthChanging($year, $month, $direction);
@@ -50,6 +51,7 @@ class HomeController extends Controller
 
         $parameters['year'] = $date->format('Y');
         $parameters['month'] = $date->format('F');
+        $parameters['boardroomID'] = $boardroomID;
 
         $data = $this->initCalendarData($parameters);
 
@@ -62,14 +64,18 @@ class HomeController extends Controller
      * Changes selected boardroom.
      *
      * @param $boardroomID
+     * @param $year
+     * @param $month
      * @return string
      */
-    public function changeBoardroom($boardroomID)
+    public function changeBoardroom($boardroomID, $year, $month)
     {
         parent::checkAuth();
 
         $view = VIEWS_PATH . 'index.php';
         $parameters['boardroomID'] = $boardroomID;
+        $parameters['year'] = $year;
+        $parameters['month'] = $month;
         $data = $this->initCalendarData($parameters);
 
         return $this->view($view, $data);
@@ -182,21 +188,26 @@ class HomeController extends Controller
 
         $weeks = [];
 
-        // Add empty cells
+        // Add empty cells at beginning of the month
         $week = '';
         $week .= str_repeat("<td></td>", $offset);
 
-        for ($day = 1; $day < $monthDayCount; $day++, $weekDayIndex++) {
+        for ($day = 1; $day <= $monthDayCount; $day++, $weekDayIndex++) {
 
             $week .= "<td>$day</td>";
+            if ($weekDayIndex % 7 === 0 || $day === $monthDayCount) {
 
-            if ($weekDayIndex % 7 === 6 || $day === $monthDayCount) {
                 if ($day === $monthDayCount) {
-                    $week .= str_repeat("<td></td>", 6 - ($weekDayIndex % 7));
+
+                    // Add empty cells at ending of the month
+                    if ($weekDayIndex !== 7){
+                        $week .= str_repeat("<td></td>", 7 - ($weekDayIndex % 7));
+                    }
                 }
 
                 $weeks[] = $week;
 
+                $weekDayIndex = 0;
                 $week = '';
             }
         }
