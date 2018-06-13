@@ -104,7 +104,10 @@ class HomeController extends Controller
 
         $data['weekDayNames'] = $this->getWeekDaysNames();
 
-        $data['weeks'] = $this->generateWeeksArrayWithAppointmentsData($data['year'], $data['month']);
+        $currentBoardroomID = isset($parameters['boardroomID']) ?
+            (new Boardroom())->getBoardroomByID($parameters['boardroomID'])->id :
+            $data['boardrooms'][0]->id;
+        $data['weeks'] = $this->generateWeeksArrayWithAppointmentsData($data['year'], $data['month'], $currentBoardroomID);
 
         return $data;
     }
@@ -186,7 +189,7 @@ class HomeController extends Controller
      * @param string $month
      * @return array
      */
-    private function generateWeeksArrayWithAppointmentsData($year, $month)
+    private function generateWeeksArrayWithAppointmentsData($year, $month, $boardroomID)
     {
         $date = new DateTime($year . '-' . $month);
         $monthDayCount = (int)$date->format('t');
@@ -210,7 +213,7 @@ class HomeController extends Controller
             $week[$arrayIndex]['monthDay'] = $day;
 
             $currentDayDate = DateTime::createFromFormat('Y-F-d', "{$year}-{$month}-{$day}");
-            $week[$arrayIndex]['appointments'] = $this->model->getAppointmentsByDay($currentDayDate);
+            $week[$arrayIndex]['appointments'] = $this->model->getAppointmentsByDayAndBoardroom($currentDayDate, $boardroomID);
 
             if ($weekDayIndex % 7 === 0 || $day === $monthDayCount) {
 
