@@ -104,7 +104,7 @@ class HomeController extends Controller
 
         $data['weekDayNames'] = $this->getWeekDaysNames();
 
-        $data['weeks'] = $this->renderWeeksOfCurrentMonth($data['year'], $data['month']);
+        $data['weeks'] = $this->generateWeeksArrayWithAppointmentsData($data['year'], $data['month']);
 
         return $data;
     }
@@ -178,7 +178,15 @@ class HomeController extends Controller
         }
     }
 
-    private function renderWeeksOfCurrentMonth($year, $month)
+    /**
+     * Generate array that contains weeks that contains arrays with days
+     * that contains array of appointments for each day
+     *
+     * @param string $year
+     * @param string $month
+     * @return array
+     */
+    private function generateWeeksArrayWithAppointmentsData($year, $month)
     {
         $date = new DateTime($year . '-' . $month);
         $monthDayCount = (int)$date->format('t');
@@ -195,8 +203,8 @@ class HomeController extends Controller
             for ($i = 0; $i < $offset; $i++) $week[$i] = null;
         }
 
-
         $this->model = new Appointment();
+
         for ($day = 1, $arrayIndex = $offset; $day <= $monthDayCount; $day++, $weekDayIndex++, $arrayIndex++) {
 
             $week[$arrayIndex]['monthDay'] = $day;
@@ -233,10 +241,14 @@ class HomeController extends Controller
      */
     private function calculateDayIndex($indexOfWeekDay)
     {
-        if (FIRST_DAY_OF_WEEK === 'monday' && $indexOfWeekDay === 0) return 7;
-        if (FIRST_DAY_OF_WEEK === 'monday') return $indexOfWeekDay;
-        if ($indexOfWeekDay === 7) return 1;
-        return $indexOfWeekDay + 1;
+        switch (FIRST_DAY_OF_WEEK) {
+            case 'monday':
+                if ($indexOfWeekDay === 0) return 7;
+                return $indexOfWeekDay;
+            case 'sunday':
+                if ($indexOfWeekDay === 7) return 1;
+                return $indexOfWeekDay + 1;
+        }
     }
 
     private function getFirstWeekOffset($indexOfWeekDay)
