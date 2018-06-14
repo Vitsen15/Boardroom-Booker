@@ -71,4 +71,7 @@
             <?= 'Weeks is not defined' ?>
         <? endif; ?>
     </table>
+    <a href="<?= URL ?>/booking/index/<?= $currentBoardroomID ?>">
+        Book it!
+    </a>
 </div>
