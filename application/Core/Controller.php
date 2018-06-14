@@ -6,11 +6,6 @@ abstract class Controller
 {
     protected $model;
 
-    /**
-     * Default controller route.
-     */
-    abstract public function index();
-
     protected function checkAuth()
     {
         session_start();
