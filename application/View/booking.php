@@ -85,7 +85,7 @@
                     <? if (isset($time)): ?>
                         <? foreach ($time['minutes'] as $minute): ?>
                             <option value="<?= $minute ?>">
-                                <?= str_pad($minute, 2, '0', STR_PAD_LEFT) ?>
+                                <?= $minute ?>
                             </option>
                         <? endforeach; ?>
                     <? endif; ?>
@@ -177,7 +177,17 @@
                 </span>
                 <input type="radio" id="recurring-monthly" name="recurring-type" value="monthly">
             </label>
+
+            <br>
+
+            <label for="recurring-duration">
+                <span>
+                    Recurring duration
+                </span>
+                <input type="text" id="recurring-duration" name="recurring-duration">
+            </label>
         </fieldset>
+
         <button type="submit">
             Submit
         </button>
