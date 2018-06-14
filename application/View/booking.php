@@ -173,7 +173,7 @@
             </label>
             <label for="recurring-monthly">
                 <span>
-                    bi-weekly
+                    monthly
                 </span>
                 <input type="radio" id="recurring-monthly" name="recurring-type" value="monthly">
             </label>
