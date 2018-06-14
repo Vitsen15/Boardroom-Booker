@@ -2,8 +2,13 @@
     <h1>
         Boardroom Booker
     </h1>
-    <form action="<?= URL ?>/booking">
-        <fieldset>
+    <p class="error">
+        <? if (isset($error)): ?>
+            <?= $error; ?>
+        <? endif; ?>
+    </p>
+    <form action="<?= URL ?>/booking/bookAppointment" method="post">
+        <fieldset name="employee">
             <legend>
                 1. Booked for.
             </legend>
@@ -20,7 +25,7 @@
             </select>
         </fieldset>
 
-        <fieldset>
+        <fieldset name="appointment-date">
             <legend>
                 2. I would like book this meeting.
             </legend>
@@ -56,36 +61,71 @@
             </select>
         </fieldset>
 
-        <fieldset>
+        <fieldset name="appointment-time">
             <legend>
                 3. Specify what the time and end of the meeting (This will be what people see whet they click on an
                 event link.)
             </legend>
 
-            <select name="hour" id="hour">
-                <? if (isset($time)): ?>
-                    <? foreach ($time['hours'] as $hour): ?>
-                        <option value="<?= $hour ?>">
-                            <?= $hour ?>
-                        </option>
-                    <? endforeach; ?>
-                <? endif; ?>
-            </select>
+            <fieldset name="start-time">
+                <legend>
+                    Start time
+                </legend>
+                <select name="start-hour" id="start-hour">
+                    <? if (isset($time)): ?>
+                        <? foreach ($time['hours'] as $hour): ?>
+                            <option value="<?= $hour ?>">
+                                <?= $hour ?>
+                            </option>
+                        <? endforeach; ?>
+                    <? endif; ?>
+                </select>
 
-            <select name="minute" id="hour">
-                <? if (isset($time)): ?>
-                    <? foreach ($time['minutes'] as $minute): ?>
-                        <option value="<?= $minute ?>">
-                            <?= str_pad($minute, 2, '0', STR_PAD_LEFT) ?>
-                        </option>
-                    <? endforeach; ?>
-                <? endif; ?>
-            </select>
+                <select name="start-minute" id="start-minute">
+                    <? if (isset($time)): ?>
+                        <? foreach ($time['minutes'] as $minute): ?>
+                            <option value="<?= $minute ?>">
+                                <?= str_pad($minute, 2, '0', STR_PAD_LEFT) ?>
+                            </option>
+                        <? endforeach; ?>
+                    <? endif; ?>
+                </select>
 
-            <select name="time-format" id="time-format">
-                <option value="AM">AM</option>
-                <option value="PM">PM</option>
-            </select>
+                <select name="start-time-format" id="start-time-format">
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                </select>
+            </fieldset>
+
+            <fieldset name="end-time">
+                <legend>
+                    End time
+                </legend>
+                <select name="end-hour" id="end-hour">
+                    <? if (isset($time)): ?>
+                        <? foreach ($time['hours'] as $hour): ?>
+                            <option value="<?= $hour ?>">
+                                <?= $hour ?>
+                            </option>
+                        <? endforeach; ?>
+                    <? endif; ?>
+                </select>
+
+                <select name="end-minute" id="end-minute">
+                    <? if (isset($time)): ?>
+                        <? foreach ($time['minutes'] as $minute): ?>
+                            <option value="<?= $minute ?>">
+                                <?= str_pad($minute, 2, '0', STR_PAD_LEFT) ?>
+                            </option>
+                        <? endforeach; ?>
+                    <? endif; ?>
+                </select>
+
+                <select name="end-time-format" id="end-time-format">
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                </select>
+            </fieldset>
         </fieldset>
 
         <fieldset>
@@ -110,7 +150,7 @@
                 <span>
                     No
                 </span>
-                <input type="radio" id="recurring-no" name="recurring" value="false">
+                <input type="radio" id="recurring-no" name="recurring" value="false" checked="checked">
             </label>
         </fieldset>
 
@@ -138,10 +178,8 @@
                 <input type="radio" id="recurring-monthly" name="recurring-type" value="monthly">
             </label>
         </fieldset>
+        <button type="submit">
+            Submit
+        </button>
     </form>
-    <p class="error">
-        <? if (isset($error)): ?>
-            <?= $error; ?>
-        <? endif; ?>
-    </p>
 </div>
