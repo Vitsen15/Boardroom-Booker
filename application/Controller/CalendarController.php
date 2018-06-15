@@ -16,7 +16,7 @@ class CalendarController extends Controller
      */
     public function index()
     {
-        Application::getInstance()->checkAuth();
+        Application::getInstance()->redirectUnauthorized();
 
         $view = VIEWS_PATH . 'index.php';
         $data = $this->initCalendarData();
@@ -36,7 +36,7 @@ class CalendarController extends Controller
      */
     public function changeCalendarMonth($year, $month, $boardroomID, $direction)
     {
-        Application::getInstance()->checkAuth();
+        Application::getInstance()->redirectUnauthorized();
         $this->validateCalendarMonthChanging($year, $month, $direction);
 
         /** @var DateTime $date */
@@ -72,7 +72,7 @@ class CalendarController extends Controller
      */
     public function changeBoardroom($boardroomID, $year, $month)
     {
-        Application::getInstance()->checkAuth();
+        Application::getInstance()->redirectUnauthorized();
 
         $view = VIEWS_PATH . 'index.php';
         $parameters['boardroomID'] = $boardroomID;

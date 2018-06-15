@@ -22,7 +22,7 @@ class BookingController extends Controller
      */
     public function index($boardroomID)
     {
-        Application::getInstance()->checkAuth();
+        Application::getInstance()->redirectUnauthorized();
 
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
@@ -39,7 +39,7 @@ class BookingController extends Controller
 
     public function bookAppointment()
     {
-        Application::getInstance()->checkAuth();
+        Application::getInstance()->redirectUnauthorized();
         $this->validateBooking($_POST);
         $this->model = new Appointment();
 

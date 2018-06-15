@@ -17,6 +17,6 @@ class LogoutController extends Controller
         unset($_SESSION['accessToken']);
         session_write_close();
 
-        Application::getInstance()->checkAuth();
+        Application::getInstance()->redirectUnauthorized();
     }
 }
