@@ -25,9 +25,10 @@ class BookingController extends Controller
 
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
-            $_SESSION['boardroomID'] = $boardroomID;
-            session_write_close();
         }
+
+        $_SESSION['boardroomID'] = $boardroomID;
+        session_write_close();
 
         $view = VIEWS_PATH . 'booking.php';
         $data = $this->initBookingFormRenderData();
@@ -46,10 +47,27 @@ class BookingController extends Controller
         }
 
         $config['boardroomID'] = $_SESSION['boardroomID'];
+
         $config['recurringTypeID'] = $_POST['recurring'] === 'true' ?
             (new RecurringType())->getRecurringTypeByName($_POST['recurring-type'])->id :
             null;
+        $config['recurring'] = $_POST['recurring'];
+        $config['recurringType'] = $_POST['recurring-type'];
+        $config['recurringDuration'] = $_POST['recurring-duration'];
+
         $config['employeeID'] = (int)$_POST['employee'];
+        $config['notes'] = $_POST['notes'];
+
+        $config['appointmentDate'] = new DateTime("{$_POST['year']}-{$_POST['month']}-{$_POST['day']}");
+        $config['appointmentStartTime'] = DateTime::createFromFormat(
+            'Y-n-d g:i A',
+            "{$_POST['year']}-{$_POST['month']}-{$_POST['day']} {$_POST['start-hour']}:{$_POST['start-minute']} {$_POST['start-time-format']}"
+        );
+
+        $config['appointmentEndTime'] = DateTime::createFromFormat(
+            'Y-n-d g:i A',
+            "{$_POST['year']}-{$_POST['month']}-{$_POST['day']} {$_POST['end-hour']}:{$_POST['end-minute']} {$_POST['end-time-format']}"
+        );
 
         $this->model->bookAppointment($config);
     }
@@ -57,49 +75,97 @@ class BookingController extends Controller
     /**
      * @param $request
      */
-    private function validateBooking($request)
+    protected function validateBooking($request)
     {
-        if ($this->validateBookingParameters($request)) {
+        if (!$this->validateBookingParameters($request)) {
             header('Location: ' . URL . '/error');
         }
 
-        try {
-            (new DateTime("{$request['month']}-{$request['day']}-{$request['year']}"))->format('n-j-Y');
-        } catch (Exception $exception) {
-            $view = VIEWS_PATH . 'booking.php';
-
-            $data = $this->initBookingFormRenderData();
-            $data['error'] = 'Chosen date is not exist';
-
-            $this->view($view, $data);
-        }
+        $this->validateBookingDate($request);
     }
 
-    private function validateBookingParameters($parameters)
+    /**
+     * @param $parameters
+     * @return bool
+     */
+    protected function validateBookingParameters($parameters)
     {
         return (
-            !ctype_digit($parameters['employee']) ||
+            ctype_digit($parameters['employee']) ||
 
-            !ctype_digit($parameters['start-hour']) ||
-            !ctype_digit($parameters['end-hour']) ||
-            !ctype_digit($parameters['start-minute']) ||
-            !ctype_digit($parameters['end-minute']) ||
+            ctype_digit($parameters['start-hour']) ||
+            ctype_digit($parameters['end-hour']) ||
+            ctype_digit($parameters['start-minute']) ||
+            ctype_digit($parameters['end-minute']) ||
 
-            strlen($parameters['notes']) >= self::MY_SQL_TEXT_FIELD_SIZE ||
+            strlen($parameters['notes']) <= self::MY_SQL_TEXT_FIELD_SIZE ||
 
-            $parameters['start-time-format'] !== 'AM' &&
-            $parameters['start-time-format'] !== 'PM' ||
-            $parameters['end-time-format'] !== 'AM' &&
-            $parameters['end-time-format'] !== 'PM' ||
+            $parameters['start-time-format'] === 'AM' &&
+            $parameters['start-time-format'] === 'PM' ||
+            $parameters['end-time-format'] === 'AM' &&
+            $parameters['end-time-format'] === 'PM' ||
 
-            $parameters['recurring'] !== 'true' && $parameters['recurring'] !== 'false' ||
+            $parameters['recurring'] === 'true' && $parameters['recurring'] === 'false' ||
 
             $parameters['recurring'] === 'true' &&
-            in_array($parameters['recurring-type'], (new RecurringType())->getRecurringTypeNames())
+            in_array($parameters['recurring-type'], (new RecurringType())->getRecurringTypeNames()) ||
+
+            $parameters['recurring-duration'] < RECURRING_LIMIT
         );
     }
 
-    private function initBookingFormRenderData()
+    /**
+     * @param $request
+     */
+    protected function validateBookingDate($request)
+    {
+        $view = VIEWS_PATH . 'booking.php';
+        $viewData = $this->initBookingFormRenderData();
+
+        $this->model = new Appointment();
+
+        try {
+            $currentDate = new DateTime();
+            $bookingDate = new DateTime("{$request['year']}-{$request['month']}-{$request['day']}");
+
+            $appointmentStartTime = DateTime::createFromFormat(
+                'Y-n-d g:i A',
+                "{$request['year']}-{$request['month']}-{$request['day']} {$request['start-hour']}:{$request['start-minute']} {$request['start-time-format']}"
+            );
+            $appointmentEndTime = DateTime::createFromFormat(
+                'Y-n-d g:i A',
+                "{$request['year']}-{$request['month']}-{$request['day']} {$request['end-hour']}:{$request['end-minute']} {$request['end-time-format']}"
+            );
+
+            if ($bookingDate < $currentDate) {
+                $viewData['error'] = 'Chosen date is already passed';
+
+                $this->view($view, $viewData);
+            }
+
+            $appointmentDuration = $appointmentStartTime->diff($appointmentEndTime)->h;
+
+            if ($appointmentDuration === 0 || $appointmentDuration > MAX_APPOINTMENT_DURATION) {
+                $viewData['error'] = 'Appointment duration cant be 0 or more than ' . MAX_APPOINTMENT_DURATION . ' hours (duration defined in app config)';
+
+                $this->view($view, $viewData);
+            }
+
+            $intersection = $this->model->checkAppointmentTimeIntersection($appointmentStartTime, $appointmentEndTime);
+
+            if ($intersection) {
+                $viewData['error'] = 'Chosen time is intersected with other appointments time';
+
+                $this->view($view, $viewData);
+            }
+        } catch (Exception $exception) {
+            $viewData['error'] = 'Chosen date not exist';
+
+            $this->view($view, $viewData);
+        }
+    }
+
+    protected function initBookingFormRenderData()
     {
         $data['months'] = $this->getMonths();
         $data['days'] = $this->generateDays();
@@ -110,7 +176,7 @@ class BookingController extends Controller
         return $data;
     }
 
-    private function generateYears()
+    protected function generateYears()
     {
         $currentYear = (int)(new DateTime())->format('Y');
         $years = [];
@@ -122,7 +188,7 @@ class BookingController extends Controller
         return $years;
     }
 
-    private function generateDays()
+    protected function generateDays()
     {
         $days = [];
 
@@ -133,7 +199,7 @@ class BookingController extends Controller
         return $days;
     }
 
-    private function getMonths()
+    protected function getMonths()
     {
         return [
             1 => 'Jan',
@@ -151,16 +217,16 @@ class BookingController extends Controller
         ];
     }
 
-    private function generateTime()
+    protected function generateTime()
     {
         $time = [];
 
-        for ($hour = 0; $hour <= 24; $hour++) {
+        for ($hour = 1; $hour <= 12; $hour++) {
             $time['hours'][] = $hour;
         }
 
         for ($minute = 0; $minute <= 60; $minute++) {
-            $time['minutes'][] = $minute;
+            $time['minutes'][] = str_pad($minute, 2, '0', STR_PAD_LEFT);
         }
 
         return $time;
