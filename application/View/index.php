@@ -47,7 +47,10 @@
                                 <ul class="appointments">
                                     <? foreach ($day['appointments'] as $appointment): ?>
                                         <li>
-                                            <a href="">
+                                            <a href="<?= URL ?>/appointment/index/<?= $appointment->id ?>"
+                                               target="popup"
+                                               onclick="window.open('<?= URL ?>/appointment/index/<?= $appointment->id ?>','popup','width=600,height=600'); return false;"
+                                            >
                                                 <?php if (HOURS_FORMAT === 12): ?>
                                                     <?= (new DateTime($appointment->start_time))->format('h:i A') ?>
                                                     -
