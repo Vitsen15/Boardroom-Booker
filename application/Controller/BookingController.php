@@ -46,28 +46,7 @@ class BookingController extends Controller
             session_start();
         }
 
-        $config['boardroomID'] = $_SESSION['boardroomID'];
-
-        $config['recurringTypeID'] = $_POST['recurring'] === 'true' ?
-            (new RecurringType())->getRecurringTypeByName($_POST['recurring-type'])->id :
-            null;
-        $config['recurring'] = $_POST['recurring'];
-        $config['recurringType'] = $_POST['recurring-type'];
-        $config['recurringDuration'] = $_POST['recurring-duration'];
-
-        $config['employeeID'] = (int)$_POST['employee'];
-        $config['notes'] = $_POST['notes'];
-
-        $config['appointmentDate'] = new DateTime("{$_POST['year']}-{$_POST['month']}-{$_POST['day']}");
-        $config['appointmentStartTime'] = DateTime::createFromFormat(
-            'Y-n-d g:i A',
-            "{$_POST['year']}-{$_POST['month']}-{$_POST['day']} {$_POST['start-hour']}:{$_POST['start-minute']} {$_POST['start-time-format']}"
-        );
-
-        $config['appointmentEndTime'] = DateTime::createFromFormat(
-            'Y-n-d g:i A',
-            "{$_POST['year']}-{$_POST['month']}-{$_POST['day']} {$_POST['end-hour']}:{$_POST['end-minute']} {$_POST['end-time-format']}"
-        );
+        $config = $this->createBookingConfig($_POST);
 
         $this->model->bookAppointment($config);
     }
@@ -85,7 +64,7 @@ class BookingController extends Controller
     }
 
     /**
-     * @param $parameters
+     * @param array $parameters - $_POST
      * @return bool
      */
     protected function validateBookingParameters($parameters)
@@ -115,7 +94,9 @@ class BookingController extends Controller
     }
 
     /**
-     * @param $request
+     * Validates booking date, generates errors text and renders it in view
+     *
+     * @param array $request - $_POST
      */
     protected function validateBookingDate($request)
     {
@@ -163,6 +144,34 @@ class BookingController extends Controller
 
             $this->view($view, $viewData);
         }
+    }
+
+    protected function createBookingConfig($request)
+    {
+        $config['boardroomID'] = $_SESSION['boardroomID'];
+
+        $config['recurringTypeID'] = $request['recurring'] === 'true' ?
+            (new RecurringType())->getRecurringTypeByName($request['recurring-type'])->id :
+            null;
+        $config['recurring'] = $request['recurring'];
+        $config['recurringType'] = $request['recurring-type'];
+        $config['recurringDuration'] = $request['recurring-duration'];
+
+        $config['employeeID'] = (int)$request['employee'];
+        $config['notes'] = $request['notes'];
+
+        $config['appointmentDate'] = new DateTime("{$request['year']}-{$request['month']}-{$request['day']}");
+        $config['appointmentStartTime'] = DateTime::createFromFormat(
+            'Y-n-d g:i A',
+            "{$request['year']}-{$request['month']}-{$request['day']} {$request['start-hour']}:{$request['start-minute']} {$request['start-time-format']}"
+        );
+
+        $config['appointmentEndTime'] = DateTime::createFromFormat(
+            'Y-n-d g:i A',
+            "{$request['year']}-{$request['month']}-{$request['day']} {$request['end-hour']}:{$request['end-minute']} {$request['end-time-format']}"
+        );
+
+        return $config;
     }
 
     protected function initBookingFormRenderData()

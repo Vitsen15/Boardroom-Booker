@@ -14,9 +14,7 @@ class Appointment extends Model
     public function bookAppointment($config)
     {
         $appointmentID = $this->createAppointment($config['boardroomID'], $config['recurringTypeID']);
-
-        $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/appointment/createAppointmentDate.sql');
-        $query = $this->db->prepare($sql);
+        $config['appointmentID'] = $appointmentID;
 
         if ($config['recurring'] === 'true') {
             $recurringDates = $this->calculateAppointmentRecurring(
@@ -27,28 +25,19 @@ class Appointment extends Model
             );
 
             foreach ($recurringDates as $recurringDate) {
-                $query->bindParam(':appointment_id', $appointmentID, PDO::PARAM_INT);
-                $query->bindParam(':employee_id', $config['employeeID'], PDO::PARAM_INT);
-                $query->bindParam(':notes', $config['notes'], PDO::PARAM_STR);
-                $query->bindParam(':appointment_date', $recurringDate['date'], PDO::PARAM_STR);
-                $query->bindParam(':appointment_start_time', $recurringDate['startTime'], PDO::PARAM_STR);
-                $query->bindParam(':appointment_end_time', $recurringDate['endTime'], PDO::PARAM_STR);
-
-                $query->execute();
+                $this->createAppointmentDate(
+                    $config,
+                    $recurringDate['date'],
+                    $recurringDate['startTime'],
+                    $recurringDate['endTime']
+                );
             }
         } elseif ($config['recurring'] === 'false') {
             $date = $config['appointmentDate']->format('Y-m-d G:i:s');
             $startTime = $config['appointmentStartTime']->format('Y-m-d G:i:s');
             $endTime = $config['appointmentEndTime']->format('Y-m-d G:i:s');
 
-            $query->bindParam(':appointment_id', $appointmentID, PDO::PARAM_INT);
-            $query->bindParam(':employee_id', $config['employeeID'], PDO::PARAM_INT);
-            $query->bindParam(':notes', $config['notes'], PDO::PARAM_STR);
-            $query->bindParam(':appointment_date', $date, PDO::PARAM_STR);
-            $query->bindParam(':appointment_start_time', $startTime, PDO::PARAM_STR);
-            $query->bindParam(':appointment_end_time', $endTime, PDO::PARAM_STR);
-
-            $query->execute();
+            $this->createAppointmentDate($config, $date, $startTime, $endTime);
         }
     }
 
@@ -89,7 +78,7 @@ class Appointment extends Model
     }
 
     /**
-     * Calculates appointment recurring dates and generates array of
+     * Calculates appointment recurring based on recurring type
      *
      * @param DateTime $startDate
      * @param DateTime $endDate
@@ -103,36 +92,30 @@ class Appointment extends Model
         switch ($recurringType) {
             case 'weekly':
                 if (!$this->checkAppointmentTimeIntersection($startDate, $endDate)) {
-                    for ($i = 0; $i < $recurringDuration; $i++) {
-                        $futureAppointmentStartDate = clone $startDate;
-                        $futureAppointmentStartDate->modify("+{$i} weeks");
-                        $futureAppointmentEndDate = clone $endDate;
-                        $futureAppointmentEndDate->modify("+{$i} weeks");
-
-                        $recurringDates[$i]['date'] = $futureAppointmentStartDate->format('Y-m-d');
-                        $recurringDates[$i]['startTime'] = $futureAppointmentStartDate->format('Y-m-d G:i:s');
-                        $recurringDates[$i]['endTime'] = $futureAppointmentEndDate->format('Y-m-d G:i:s');
-                    }
+                    $recurringDates = $this->generateRecurringDates(
+                        $startDate,
+                        $endDate,
+                        $recurringDuration,
+                        'weeks',
+                        1
+                    );
                 } else {
                     $recurringDates = false;
                 }
                 break;
             case 'bi-weekly':
-                if ($recurringDuration % 2 !== 0) {
-                    $recurringDuration = $recurringDuration - 1;
-                }
-
                 if (!$this->checkAppointmentTimeIntersection($startDate, $endDate)) {
-                    for ($i = 0, $week = 0; $i < $recurringDuration; $i++, $week += 2) {
-                        $futureAppointmentStartDate = clone $startDate;
-                        $futureAppointmentStartDate->modify("+{$week} weeks");
-                        $futureAppointmentEndDate = clone $endDate;
-                        $futureAppointmentEndDate->modify("+{$week} weeks");
+                    $recurringDuration = $recurringDuration % 2 !== 0 ?
+                        $recurringDuration - 1 :
+                        $recurringDuration;
 
-                        $recurringDates[$i]['date'] = $futureAppointmentStartDate->format('Y-m-d');
-                        $recurringDates[$i]['startTime'] = $futureAppointmentStartDate->format('Y-m-d G:i:s');
-                        $recurringDates[$i]['endTime'] = $futureAppointmentEndDate->format('Y-m-d G:i:s');
-                    }
+                    $recurringDates = $this->generateRecurringDates(
+                        $startDate,
+                        $endDate,
+                        $recurringDuration,
+                        'weeks',
+                        2
+                    );
                 } else {
                     $recurringDates = false;
                 }
@@ -140,20 +123,46 @@ class Appointment extends Model
 
             case 'monthly':
                 if (!$this->checkAppointmentTimeIntersection($startDate, $endDate)) {
-                    for ($i = 0; $i < $recurringDuration; $i++) {
-                        $futureAppointmentStartDate = clone $startDate;
-                        $futureAppointmentStartDate->modify("+{$i} months");
-                        $futureAppointmentEndDate = clone $endDate;
-                        $futureAppointmentEndDate->modify("+{$i} months");
-
-                        $recurringDates[$i]['date'] = $futureAppointmentStartDate->format('Y-m-d');
-                        $recurringDates[$i]['startTime'] = $futureAppointmentStartDate->format('Y-m-d G:i:s');
-                        $recurringDates[$i]['endTime'] = $futureAppointmentEndDate->format('Y-m-d G:i:s');
-                    }
+                    $recurringDates = $this->generateRecurringDates(
+                        $startDate,
+                        $endDate,
+                        $recurringDuration,
+                        'months',
+                        1
+                    );
                 } else {
                     $recurringDates = false;
                 }
                 break;
+        }
+
+        return $recurringDates;
+    }
+
+    /**
+     * Generates recurring dates
+     *
+     * @param DateTime $startDate
+     * @param DateTime $endDate
+     * @param int $recurringCount
+     * @param string $DatetimeOffset
+     * @param int $countOffset
+     * @return array
+     */
+    protected function generateRecurringDates($startDate, $endDate, $recurringCount, $DatetimeOffset, $countOffset = 1)
+    {
+        $recurringDates = [];
+
+        for ($i = 0, $offset = 0; $i < $recurringCount; $i++, $offset += $countOffset) {
+            $futureAppointmentStartDate = clone $startDate;
+            $futureAppointmentStartDate->modify("+{$offset} {$DatetimeOffset}");
+
+            $futureAppointmentEndDate = clone $endDate;
+            $futureAppointmentEndDate->modify("+{$offset} {$DatetimeOffset}");
+
+            $recurringDates[$i]['date'] = $futureAppointmentStartDate->format('Y-m-d');
+            $recurringDates[$i]['startTime'] = $futureAppointmentStartDate->format('Y-m-d G:i:s');
+            $recurringDates[$i]['endTime'] = $futureAppointmentEndDate->format('Y-m-d G:i:s');
         }
 
         return $recurringDates;
@@ -183,7 +192,7 @@ class Appointment extends Model
     }
 
     /**
-     *
+     * Creates appointment by boardroom and recurring type (if exist) and returns created appointment id
      *
      * @param $boardroomID
      * @param $recurringTypeID
@@ -200,5 +209,27 @@ class Appointment extends Model
         $query->nextRowset();
 
         return (int)$query->fetch()->appointment_id;
+    }
+
+
+    /**
+     * @param array $bookingConfig
+     * @param string $date
+     * @param string $startTime
+     * @param string $endTime
+     */
+    protected function createAppointmentDate($bookingConfig, $date, $startTime, $endTime)
+    {
+        $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/appointment/createAppointmentDate.sql');
+        $query = $this->db->prepare($sql);
+
+        $query->bindParam(':appointment_id', $bookingConfig['appointmentID'], PDO::PARAM_INT);
+        $query->bindParam(':employee_id', $bookingConfig['employeeID'], PDO::PARAM_INT);
+        $query->bindParam(':notes', $bookingConfig['notes'], PDO::PARAM_STR);
+        $query->bindParam(':appointment_date', $date, PDO::PARAM_STR);
+        $query->bindParam(':appointment_start_time', $startTime, PDO::PARAM_STR);
+        $query->bindParam(':appointment_end_time', $endTime, PDO::PARAM_STR);
+
+        $query->execute();
     }
 }
