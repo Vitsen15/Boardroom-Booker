@@ -17,3 +17,6 @@ define('FIRST_DAY_OF_WEEK', 'sunday');
 //define('HOURS_FORMAT', 24);
 
 define('HOURS_FORMAT', 24);
+
+define('RECURRING_LIMIT', 4);
+define('MAX_APPOINTMENT_DURATION', 8);
