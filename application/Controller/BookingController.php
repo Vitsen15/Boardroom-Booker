@@ -2,6 +2,7 @@
 
 namespace Controller;
 
+use Core\Application;
 use Core\Controller;
 use DateTime;
 use Exception;
@@ -21,7 +22,7 @@ class BookingController extends Controller
      */
     public function index($boardroomID)
     {
-        parent::checkAuth();
+        Application::getInstance()->checkAuth();
 
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
@@ -38,7 +39,7 @@ class BookingController extends Controller
 
     public function bookAppointment()
     {
-        parent::checkAuth();
+        Application::getInstance()->checkAuth();
         $this->validateBooking($_POST);
         $this->model = new Appointment();
 

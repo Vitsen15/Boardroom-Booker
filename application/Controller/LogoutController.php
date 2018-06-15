@@ -2,6 +2,7 @@
 
 namespace Controller;
 
+use Core\Application;
 use Core\Controller;
 
 class LogoutController extends Controller
@@ -16,6 +17,6 @@ class LogoutController extends Controller
         unset($_SESSION['accessToken']);
         session_write_close();
 
-        parent::checkAuth();
+        Application::getInstance()->checkAuth();
     }
 }

@@ -6,19 +6,6 @@ abstract class Controller
 {
     protected $model;
 
-    protected function checkAuth()
-    {
-        session_start();
-
-        if (
-            !isset($_SESSION['accessToken']) ||
-            !isset($_COOKIE['accessToken']) ||
-            $_SESSION['accessToken'] != $_COOKIE['accessToken']
-        ) {
-            header('Location: ' . URL . '/login');
-        } else return;
-    }
-
     /**
      * Renders provided view inside layout.
      *

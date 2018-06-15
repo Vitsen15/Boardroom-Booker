@@ -2,6 +2,7 @@
 
 namespace Controller;
 
+use Core\Application;
 use Core\Controller;
 use DateTime;
 use Model\Appointment;
@@ -15,7 +16,7 @@ class CalendarController extends Controller
      */
     public function index()
     {
-        parent::checkAuth();
+        Application::getInstance()->checkAuth();
 
         $view = VIEWS_PATH . 'index.php';
         $data = $this->initCalendarData();
@@ -35,7 +36,7 @@ class CalendarController extends Controller
      */
     public function changeCalendarMonth($year, $month, $boardroomID, $direction)
     {
-        parent::checkAuth();
+        Application::getInstance()->checkAuth();
         $this->validateCalendarMonthChanging($year, $month, $direction);
 
         /** @var DateTime $date */
@@ -71,7 +72,7 @@ class CalendarController extends Controller
      */
     public function changeBoardroom($boardroomID, $year, $month)
     {
-        parent::checkAuth();
+        Application::getInstance()->checkAuth();
 
         $view = VIEWS_PATH . 'index.php';
         $parameters['boardroomID'] = $boardroomID;
@@ -111,8 +112,6 @@ class CalendarController extends Controller
         $data['weekDayNames'] = $this->getWeekDaysNames();
 
         $data['weeks'] = $this->generateWeeksArrayWithAppointmentsData($data['year'], $data['month'], $currentBoardroomID);
-
-//        var_dump($currentBoardroomID);die;
 
         return $data;
     }

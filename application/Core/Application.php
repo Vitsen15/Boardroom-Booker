@@ -2,8 +2,8 @@
 
 namespace Core;
 
-use Controller\ErrorController;
 use Controller\CalendarController;
+use Controller\ErrorController;
 use Core\Traits\Singleton;
 
 class Application
@@ -82,4 +82,19 @@ class Application
         }
     }
 
+    /**
+     * @return bool
+     */
+    public function checkAuth()
+    {
+        session_start();
+
+        if (
+            !isset($_SESSION['accessToken']) ||
+            !isset($_COOKIE['accessToken']) ||
+            $_SESSION['accessToken'] != $_COOKIE['accessToken']
+        ) {
+            header('Location: ' . URL . '/login');
+        } else return true;
+    }
 }
