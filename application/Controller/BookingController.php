@@ -4,6 +4,8 @@ namespace Controller;
 
 use Core\Application;
 use Core\Controller;
+use Core\Exceptions\InvalidDateException;
+use Core\Traits\DateValidation;
 use DateTime;
 use Exception;
 use Model\Appointment;
@@ -12,6 +14,8 @@ use Model\RecurringType;
 
 class BookingController extends Controller
 {
+    use DateValidation;
+
     const YEARS_PERIOD = 30;
     const MY_SQL_TEXT_FIELD_SIZE = 65535;
 
@@ -23,10 +27,7 @@ class BookingController extends Controller
     public function index($boardroomID)
     {
         Application::getInstance()->redirectUnauthorized();
-
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->sessionStart();
 
         $_SESSION['boardroomID'] = $boardroomID;
         session_write_close();
@@ -43,9 +44,7 @@ class BookingController extends Controller
         $this->validateBooking($_POST);
         $this->model = new Appointment();
 
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->sessionStart();
 
         $config = $this->createBookingConfig($_POST);
 
@@ -104,10 +103,7 @@ class BookingController extends Controller
         $view = VIEWS_PATH . 'booking.php';
         $viewData = $this->initBookingFormRenderData();
 
-        $this->model = new Appointment();
-
         try {
-            $currentDate = new DateTime();
             $bookingDate = new DateTime("{$request['year']}-{$request['month']}-{$request['day']}");
 
             $appointmentStartTime = DateTime::createFromFormat(
@@ -119,30 +115,18 @@ class BookingController extends Controller
                 "{$request['year']}-{$request['month']}-{$request['day']} {$request['end-hour']}:{$request['end-minute']} {$request['end-time-format']}"
             );
 
-            if ($bookingDate < $currentDate) {
-                $viewData['error'] = 'Chosen date is already passed';
-
-                $this->view($view, $viewData);
+            if (!$appointmentStartTime || !$appointmentEndTime) {
+                throw new Exception();
             }
 
-            if ($appointmentStartTime > $appointmentEndTime) {
-                $viewData['error'] = 'Start time can\'t be later end time.';
+            try {
+                $this->checkIfDatePassed($bookingDate);
+                $this->checkTimeSequence($appointmentStartTime, $appointmentEndTime);
+                $this->checkAppointmentDuration($appointmentStartTime, $appointmentEndTime);
+                $this->checkAppointmentTimeIntersection($appointmentStartTime, $appointmentEndTime);
 
-                $this->view($view, $viewData, false);
-            }
-
-            $appointmentDuration = $appointmentStartTime->diff($appointmentEndTime)->h;
-
-            if ($appointmentDuration === 0 || $appointmentDuration > MAX_APPOINTMENT_DURATION) {
-                $viewData['error'] = 'Appointment duration cant be 0 or more than ' . MAX_APPOINTMENT_DURATION . ' hours (duration defined in app config)';
-
-                $this->view($view, $viewData);
-            }
-
-            $intersection = $this->model->checkAppointmentTimeIntersection($appointmentStartTime, $appointmentEndTime);
-
-            if ($intersection) {
-                $viewData['error'] = 'Chosen time is intersected with other appointments time';
+            } catch (InvalidDateException $exception) {
+                $viewData['error'] = $exception->getMessage();
 
                 $this->view($view, $viewData);
             }
@@ -161,7 +145,7 @@ class BookingController extends Controller
             (new RecurringType())->getRecurringTypeByName($request['recurring-type'])->id :
             null;
         $config['recurring'] = $request['recurring'];
-        $config['recurringType'] = $request['recurring-type'];
+        $config['recurringType'] = isset($request['recurring-type']) ? $request['recurring-type'] : null;
         $config['recurringDuration'] = $request['recurring-duration'];
 
         $config['employeeID'] = (int)$request['employee'];
@@ -190,6 +174,13 @@ class BookingController extends Controller
         $data['employees'] = (new Employee())->getAllEmployees();
 
         return $data;
+    }
+
+    protected function sessionStart()
+    {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
     }
 
     protected function generateYears()
