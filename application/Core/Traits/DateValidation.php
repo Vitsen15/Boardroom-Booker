@@ -75,16 +75,16 @@ trait DateValidation
     /**
      * @param DateTime $startTime
      * @param DateTime $endTime
-     * @param int $appointmentDateID
+     * @param int $appointmentID
      * @throws InvalidDateException
      */
-    public function checkAppointmentTimeIntersectionExceptItself($startTime, $endTime, $appointmentDateID)
+    public function checkAppointmentTimeIntersectionExceptItself($startTime, $endTime, $appointmentID)
     {
         $appointmentModel = new Appointment();
         $intersection = $appointmentModel->checkAppointmentTimeIntersectionExceptItself(
             $startTime,
             $endTime,
-            $appointmentDateID
+            $appointmentID
         );
 
         if ($intersection) {
