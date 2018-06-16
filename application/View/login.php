@@ -11,6 +11,7 @@
         </label>
         <button type="submit">Login</button>
     </form>
+    <a href="<?= URL ?>/register">Or register</a>
     <p>
         <? if (isset($errorMessage)): ?>
             <?= $errorMessage; ?>

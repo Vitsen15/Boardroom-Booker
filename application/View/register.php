@@ -23,6 +23,7 @@
         </label>
         <button type="submit">Register</button>
     </form>
+    <a href="<?= URL ?>/login">Login</a>
     <p class="error">
         <? if (isset($errorMessage)): ?>
             <?= $errorMessage; ?>
