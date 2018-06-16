@@ -61,6 +61,113 @@ class Appointment extends Model
     }
 
     /**
+     * @param $id
+     * @return \stdClass
+     */
+    public function getAppointmentDateByID($id)
+    {
+        $sql = /** @lang MySQL */
+            "select * from appointment_date where appointment_date.id = :id";
+
+        $query = $this->db->prepare($sql);
+        $query->bindParam(':id', $id, PDO::PARAM_INT);
+        $query->execute();
+
+        return $query->fetch();
+    }
+
+    /**
+     * @param $id
+     * @return \stdClass
+     */
+    public function getAppointmentByID($id)
+    {
+        $sql = /** @lang MySQL */
+            "select * from appointment where appointment.id = :id";
+
+        $query = $this->db->prepare($sql);
+        $query->bindParam(':id', $id, PDO::PARAM_INT);
+        $query->execute();
+
+        return $query->fetch();
+    }
+
+    /**
+     * @param int $id
+     * @param DateTime $startTime
+     * @param DateTime $endTime
+     * @param string $notes
+     * @param int $employeeID
+     */
+    public function updateSingleAppointmentDate($id, $startTime, $endTime, $notes, $employeeID)
+    {
+        $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/appointment/updateSingleAppointmentDate.sql');
+        $query = $this->db->prepare($sql);
+
+        $startTime = $startTime->format('Y-m-d G:i:s');
+        $endTime = $endTime->format('Y-m-d G:i:s');
+
+        $query->bindParam(':id', $id, PDO::PARAM_INT);
+        $query->bindParam(':start_time', $startTime, PDO::PARAM_STR);
+        $query->bindParam(':end_time', $endTime, PDO::PARAM_STR);
+        $query->bindParam(':notes', $notes, PDO::PARAM_STR);
+        $query->bindParam(':employee_id', $employeeID, PDO::PARAM_INT);
+        $query->execute();
+    }
+
+    /**
+     * @param int $appointmentID
+     * @param DateTime $startTime
+     * @param DateTime $endTime
+     * @param string $notes
+     * @param int $employeeID
+     */
+    public function updateAllAppointmentDatesOfAppointment($appointmentID, $startTime, $endTime, $notes, $employeeID)
+    {
+        $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/appointment/updateAllAppointmentDatesOfAppointment.sql');
+        $query = $this->db->prepare($sql);
+
+        $startTime = $startTime->format('Y-m-d G:i:s');
+        $endTime = $endTime->format('Y-m-d G:i:s');
+
+        $query->bindParam(':app_id', $appointmentID, PDO::PARAM_INT);
+        $query->bindParam(':start_time', $startTime, PDO::PARAM_STR);
+        $query->bindParam(':end_time', $endTime, PDO::PARAM_STR);
+        $query->bindParam(':notes', $notes, PDO::PARAM_STR);
+        $query->bindParam(':employee_id', $employeeID, PDO::PARAM_INT);
+        $query->execute();
+    }
+
+    /**
+     * Turns status field is_deleted to true and updates deleted_at timestamp for required appointment_date
+     *
+     * @param $id
+     */
+    public function softDeleteAppointmentDate($id)
+    {
+        $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/appointment/deleteAppointmentDate.sql');
+        $query = $this->db->prepare($sql);
+
+        $query->bindParam(':id', $id, PDO::PARAM_INT);
+        $query->execute();
+    }
+
+    /**
+     * Turns status field is_deleted to true and updates deleted_at timestamp for all appointment_date
+     * table items that have same appointment_id.
+     *
+     * @param int $id
+     */
+    public function softDeleteAppointmentDatesCoincidingByAppointmentID($id)
+    {
+        $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/appointment/deleteAppointmentDatesByIDAndCoincidingByAppointmentID');
+
+        $query = $this->db->prepare($sql);
+        $query->bindParam(':id', $id, PDO::PARAM_INT);
+        $query->execute();
+    }
+
+    /**
      * @param DateTime $date
      * @return array | bool
      */
@@ -174,7 +281,7 @@ class Appointment extends Model
      * @param DateTime $startDate
      * @param DateTime $endDate
      *
-     * @return array - of intersected appointment dates | bool
+     * @return \stdClass - of intersected appointment date | bool
      */
     public function checkAppointmentTimeIntersection($startDate, $endDate)
     {
@@ -186,6 +293,32 @@ class Appointment extends Model
 
         $query->bindParam(':start_time', $startDate, PDO::PARAM_STR);
         $query->bindParam(':end_time', $endDate, PDO::PARAM_STR);
+        $query->execute();
+
+        return $query->fetch();
+    }
+
+    /**
+     * Checks if given appointment intersect with other appointments but not check it for itself
+     *
+     * @param DateTime $startDate
+     * @param DateTime $endDate
+     * @param int $appointmentID
+     *
+     * @return \stdClass - of intersected appointment date | bool
+     */
+    public function checkAppointmentTimeIntersectionExceptItself($startDate, $endDate, $appointmentID)
+    {
+        $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql/appointment/checkAppointmentTimeIntersectionExceptItself.sql');
+        $query = $this->db->prepare($sql);
+
+
+        $startDate = $startDate->format('Y-m-d G:i:s');
+        $endDate = $endDate->format('Y-m-d G:i:s');
+
+        $query->bindParam(':start_time', $startDate, PDO::PARAM_STR);
+        $query->bindParam(':end_time', $endDate, PDO::PARAM_STR);
+        $query->bindParam(':app_id', $appointmentID, PDO::PARAM_INT);
         $query->execute();
 
         return $query->fetch();

@@ -1,0 +1,11 @@
+update appointment_date
+set appointment_date.is_deleted = true,
+  appointment_date.deleted_at   = now()
+where appointment_date.appointment_id in (
+  select *
+  from (
+         select appointment_date.appointment_id
+         from appointment_date
+         where appointment_date.id = :id
+       ) as app_date
+);
