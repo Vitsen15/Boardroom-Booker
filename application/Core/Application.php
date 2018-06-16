@@ -87,7 +87,7 @@ class Application
      */
     public function checkAuth()
     {
-        session_start();
+        $this->sessionStart();
 
         if (
             !isset($_SESSION['accessToken']) ||
@@ -100,7 +100,7 @@ class Application
 
     public function redirectUnauthorized()
     {
-        session_start();
+        $this->sessionStart();
 
         if (
             !isset($_SESSION['accessToken']) ||
@@ -108,6 +108,13 @@ class Application
             $_SESSION['accessToken'] != $_COOKIE['accessToken']
         ) {
             header('Location: ' . URL . '/login');
+        }
+    }
+
+    protected function sessionStart()
+    {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
         }
     }
 }
