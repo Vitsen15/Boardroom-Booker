@@ -49,6 +49,8 @@ class BookingController extends Controller
         $config = $this->createBookingConfig($_POST);
 
         $this->model->bookAppointment($config);
+
+        header('Location: ' . URL . '/calendar');
     }
 
     /**
