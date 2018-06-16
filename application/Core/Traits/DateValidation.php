@@ -71,4 +71,24 @@ trait DateValidation
             throw new InvalidDateException('Chosen time is intersected with other appointments time');
         }
     }
+
+    /**
+     * @param DateTime $startTime
+     * @param DateTime $endTime
+     * @param int $appointmentDateID
+     * @throws InvalidDateException
+     */
+    public function checkAppointmentTimeIntersectionExceptItself($startTime, $endTime, $appointmentDateID)
+    {
+        $appointmentModel = new Appointment();
+        $intersection = $appointmentModel->checkAppointmentTimeIntersectionExceptItself(
+            $startTime,
+            $endTime,
+            $appointmentDateID
+        );
+
+        if ($intersection) {
+            throw new InvalidDateException('Chosen time is intersected with other appointments time');
+        }
+    }
 }
