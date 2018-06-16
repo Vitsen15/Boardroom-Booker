@@ -9,6 +9,22 @@
     <link rel="stylesheet" type="text/css" href="<?= URL ?>/styles/main.css"/>
 </head>
 <body>
+<nav>
+    <ul>
+        <? if (\Core\Application::getInstance()->checkAuth()): ?>
+            <li>
+                <a href="<?= URL ?>/calendar">
+                    Calendar
+                </a>
+            </li>
+            <li>
+                <a href="<?= URL ?>/logout">
+                    Logout
+                </a>
+            </li>
+        <? endif; ?>
+    </ul>
+</nav>
 <? include $template; ?>
 
 <script src="<?= URL ?>/js/main.js" type="text/javascript"></script>
