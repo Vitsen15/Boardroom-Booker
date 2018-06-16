@@ -125,6 +125,12 @@ class BookingController extends Controller
                 $this->view($view, $viewData);
             }
 
+            if ($appointmentStartTime > $appointmentEndTime) {
+                $viewData['error'] = 'Start time can\'t be later end time.';
+
+                $this->view($view, $viewData, false);
+            }
+
             $appointmentDuration = $appointmentStartTime->diff($appointmentEndTime)->h;
 
             if ($appointmentDuration === 0 || $appointmentDuration > MAX_APPOINTMENT_DURATION) {
