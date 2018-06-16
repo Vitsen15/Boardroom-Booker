@@ -79,4 +79,8 @@
     <a href="<?= URL ?>/booking/index/<?= $currentBoardroomID ?>">
         Book it!
     </a>
+    <br>
+    <a href="<?= URL ?>/employee">
+        Employee list
+    </a>
 </div>

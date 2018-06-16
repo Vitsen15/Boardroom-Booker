@@ -1,0 +1,8 @@
+.calendar, thead, tbody td {
+    border: 2px solid black;
+    border-collapse: collapse;
+}
+
+.error {
+    color: red;
+}
