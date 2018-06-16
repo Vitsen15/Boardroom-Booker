@@ -46,11 +46,13 @@
                             <? if (isset($day['appointments'])): ?>
                                 <ul class="appointments">
                                     <? foreach ($day['appointments'] as $appointment): ?>
+                                        <? if ($appointment->is_deleted == 1)
+                                            continue;
+                                        ?>
                                         <li>
                                             <a href="<?= URL ?>/appointment/index/<?= $appointment->id ?>"
                                                target="popup"
-                                               onclick="window.open('<?= URL ?>/appointment/index/<?= $appointment->id ?>','popup','width=600,height=600'); return false;"
-                                            >
+                                               onclick="window.open('<?= URL ?>/appointment/index/<?= $appointment->id ?>','popup','width=600,height=600'); return false;">
                                                 <?php if (HOURS_FORMAT === 12): ?>
                                                     <?= (new DateTime($appointment->start_time))->format('h:i A') ?>
                                                     -
