@@ -6,6 +6,7 @@ use Core\Application;
 use Core\Controller;
 use Core\Exceptions\InvalidDateException;
 use Core\Traits\DateValidation;
+use Core\Traits\Notificator;
 use DateTime;
 use Exception;
 use Model\Appointment;
@@ -14,7 +15,7 @@ use Model\RecurringType;
 
 class BookingController extends Controller
 {
-    use DateValidation;
+    use DateValidation, Notificator;
 
     const YEARS_PERIOD = 30;
     const MY_SQL_TEXT_FIELD_SIZE = 65535;
@@ -50,7 +51,14 @@ class BookingController extends Controller
 
         $this->model->bookAppointment($config);
 
-        header('Location: ' . URL . '/calendar');
+        $redirect = URL . '/calendar';
+
+        $this->appointmentCreationNotification(
+            $config['appointmentStartTime'],
+            $config['appointmentEndTime'],
+            $config['notes'],
+            $redirect
+        );
     }
 
     /**

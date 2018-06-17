@@ -6,6 +6,7 @@ use Core\Application;
 use Core\Controller;
 use Core\Exceptions\InvalidDateException;
 use Core\Traits\DateValidation;
+use Core\Traits\Notificator;
 use DateTime;
 use Exception;
 use Model\Appointment;
@@ -13,7 +14,7 @@ use Model\Employee;
 
 class AppointmentController extends Controller
 {
-    use DateValidation;
+    use DateValidation, Notificator;
 
     const MY_SQL_TEXT_FIELD_SIZE = 65535;
 
@@ -40,13 +41,13 @@ class AppointmentController extends Controller
         switch ($_POST['action']) {
             case 'update':
                 $this->updateAppointment($_POST);
+                echo "<script>window.close();</script>";
                 break;
             case 'delete':
                 $this->deleteAppointment($_POST);
+                $this->appointmentDeletingNotification($_POST);
                 break;
         }
-
-        echo "<script>window.close();</script>";
     }
 
     protected function deleteAppointment($request)
