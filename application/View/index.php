@@ -58,9 +58,9 @@
                                                     -
                                                     <?= (new DateTime($appointment->end_time))->format('h:i A') ?>
                                                 <? elseif (HOURS_FORMAT === 24): ?>
-                                                    <?= (new DateTime($appointment->start_time))->format('h:i') ?>
+                                                    <?= (new DateTime($appointment->start_time))->format('H:i') ?>
                                                     -
-                                                    <?= (new DateTime($appointment->end_time))->format('h:i') ?>
+                                                    <?= (new DateTime($appointment->end_time))->format('H:i') ?>
                                                 <? endif; ?>
 
                                             </a>
