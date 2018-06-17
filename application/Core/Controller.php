@@ -4,7 +4,16 @@ namespace Core;
 
 abstract class Controller
 {
+    /** @var Model */
     protected $model;
+
+    /** @var Application */
+    protected $app;
+
+    public function __construct()
+    {
+        $this->app = Application::getInstance();
+    }
 
     /**
      * Renders provided view inside layout or standalone.

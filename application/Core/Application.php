@@ -111,7 +111,7 @@ class Application
         }
     }
 
-    protected function sessionStart()
+    public function sessionStart()
     {
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
