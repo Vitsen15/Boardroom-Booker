@@ -2,7 +2,6 @@
 
 namespace Controller;
 
-use Core\Application;
 use Core\Controller;
 use Core\Exceptions\InvalidDateException;
 use Core\Traits\DateValidation;
@@ -23,9 +22,8 @@ class AppointmentController extends Controller
      */
     public function index($appointmentDateID)
     {
-        Application::getInstance()->redirectUnauthorized();
-
-        $this->startSession();
+        $this->app->redirectUnauthorized();
+        $this->app->sessionStart();
 
         $_SESSION['appointmentDateID'] = $appointmentDateID;
         session_write_close();
@@ -38,6 +36,7 @@ class AppointmentController extends Controller
 
     public function change()
     {
+        $this->app->redirectUnauthorized();
         switch ($_POST['action']) {
             case 'update':
                 $this->updateAppointment($_POST);
@@ -52,7 +51,7 @@ class AppointmentController extends Controller
 
     protected function deleteAppointment($request)
     {
-        $this->startSession();
+        $this->app->sessionStart();
 
         $appointmentDateID = $_SESSION['appointmentDateID'];
         $this->model = new Appointment();
@@ -66,7 +65,7 @@ class AppointmentController extends Controller
 
     protected function updateAppointment($request)
     {
-        $this->startSession();
+        $this->app->sessionStart();
         $this->validateUpdating($request);
 
         $appointmentDateID = $_SESSION['appointmentDateID'];
@@ -95,13 +94,6 @@ class AppointmentController extends Controller
         }
     }
 
-    protected function startSession()
-    {
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
-    }
-
     /**
      * @param array $request
      */
@@ -119,7 +111,7 @@ class AppointmentController extends Controller
      */
     protected function validateUpdatingDates($request)
     {
-        $this->startSession();
+        $this->app->sessionStart();
         $this->model = new Appointment();
 
         $view = VIEWS_PATH . 'appointment.php';
@@ -166,7 +158,7 @@ class AppointmentController extends Controller
 
     protected function initChangingFormRenderData()
     {
-        $this->startSession();
+        $this->app->sessionStart();
         $this->model = new Appointment();
 
         $appointmentDateID = $_SESSION['appointmentDateID'];

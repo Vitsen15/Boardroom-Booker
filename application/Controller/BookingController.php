@@ -27,8 +27,8 @@ class BookingController extends Controller
      */
     public function index($boardroomID)
     {
-        Application::getInstance()->redirectUnauthorized();
-        $this->sessionStart();
+        $this->app->redirectUnauthorized();
+        $this->app->sessionStart();
 
         $_SESSION['boardroomID'] = $boardroomID;
         session_write_close();
@@ -41,11 +41,11 @@ class BookingController extends Controller
 
     public function bookAppointment()
     {
-        Application::getInstance()->redirectUnauthorized();
+        $this->app->redirectUnauthorized();
         $this->validateBooking($_POST);
         $this->model = new Appointment();
 
-        $this->sessionStart();
+        $this->app->sessionStart();
 
         $config = $this->createBookingConfig($_POST);
 
@@ -184,13 +184,6 @@ class BookingController extends Controller
         $data['employees'] = (new Employee())->getAllEmployees();
 
         return $data;
-    }
-
-    protected function sessionStart()
-    {
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
     }
 
     protected function generateYears()

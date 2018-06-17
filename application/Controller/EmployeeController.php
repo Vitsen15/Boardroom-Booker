@@ -11,7 +11,7 @@ class EmployeeController extends Controller
 {
     public function index()
     {
-        Application::getInstance()->redirectUnauthorized();
+        $this->app->redirectUnauthorized();
         $this->model = new Employee();
 
         $view = VIEWS_PATH . 'employees/index.php';
@@ -22,7 +22,7 @@ class EmployeeController extends Controller
 
     public function update($employeeID = null)
     {
-        Application::getInstance()->redirectUnauthorized();
+        $this->app->redirectUnauthorized();
         $this->model = new Employee();
         $view = VIEWS_PATH . 'employees/update.php';
 
@@ -32,7 +32,7 @@ class EmployeeController extends Controller
                 die;
                 break;
             case 'GET':
-                $this->sessionStart();
+                $this->app->sessionStart();
                 $_SESSION['employeeID'] = $employeeID;
                 session_write_close();
 
@@ -44,7 +44,7 @@ class EmployeeController extends Controller
 
     public function create()
     {
-        Application::getInstance()->redirectUnauthorized();
+        $this->app->redirectUnauthorized();
         $this->model = new Employee();
         $view = VIEWS_PATH . 'employees/create.php';
 
@@ -96,16 +96,9 @@ class EmployeeController extends Controller
 
     protected function initUpdateAndCreateViewsRenderData()
     {
-        $this->sessionStart();
+        $this->app->sessionStart();
         $viewData['employee'] = (new Employee())->findEmployeeByID($_SESSION['employeeID']);
 
         return $viewData;
-    }
-
-    protected function sessionStart()
-    {
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
     }
 }
