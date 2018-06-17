@@ -50,9 +50,10 @@ class EmployeeController extends Controller
 
         switch ($_SERVER['REQUEST_METHOD']) {
             case 'POST':
-                $this->validateParameters($_REQUEST, $view);
-                $this->model->createEmployee($_REQUEST['first-name'], $_REQUEST['last-name'], $_REQUEST['email']);
-                header('Location: ' . URL . '/employee');
+                if ($this->validateParameters($_REQUEST, $view)) {
+                    $this->model->createEmployee($_REQUEST['first-name'], $_REQUEST['last-name'], $_REQUEST['email']);
+                    header('Location: ' . URL . '/employee');
+                }
                 break;
             case 'GET':
                 $this->view($view);
@@ -75,20 +76,22 @@ class EmployeeController extends Controller
             $viewData['error'] = 'First name length cannot be less than 3 or more than 30 characters';
 
             $this->view($view, $viewData);
-            return;
+            return false;
         }
         if (strlen($request['last-name']) > 30 || strlen($request['last-name']) < 3) {
             $viewData['error'] = 'Last name length cannot be less than 3 or more than 30 characters';
 
             $this->view($view, $viewData);
-            return;
+            return false;
         }
         if (!filter_var($request['email'], FILTER_VALIDATE_EMAIL)) {
             $viewData['error'] = 'Please enter valid email';
 
             $this->view($view, $viewData);
-            return;
+            return false;
         }
+
+        return true;
     }
 
     protected function initUpdateAndCreateViewsRenderData()
